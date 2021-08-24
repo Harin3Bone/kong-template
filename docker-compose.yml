@@ -17,12 +17,14 @@ services:
       - TZ=${TIMEZONE}
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready", "-U", "postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
     
   kong:
+    depends_on: 
+      - kong-db
     image: kong
     container_name: kong
     networks: 
@@ -47,8 +49,6 @@ services:
       - KONG_ADMIN_ERROR_LOG=/dev/stderr
       - KONG_ADMIN_LISTEN=0.0.0.0:8001, 0.0.0.0:8444 ssl http2
       - TZ=${TIMEZONE}
-    depends_on: 
-      - kong-db
     restart: always
     healthcheck:
       test: ["CMD", "kong", "health"]
