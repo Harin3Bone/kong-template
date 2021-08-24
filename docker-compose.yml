@@ -1,0 +1,83 @@
+version: '3.8'
+
+services: 
+  kong-db:
+    image: postgres:13-alpine
+    container_name: kong-db
+    volumes: 
+      - db:/var/lib/postgresql/data
+    networks: 
+      - net
+    ports: 
+      - "${PSQL_PORT}:5432"
+    environment: 
+      - POSTGRES_DB=${PSQL_DB}
+      - POSTGRES_USER=${PSQL_USER}
+      - POSTGRES_PASSWORD=${PSQL_PSWD}
+      - TZ=${TIMEZONE}
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-U", "postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    
+  kong:
+    depends_on: 
+      - kong-db
+    image: kong
+    container_name: kong
+    networks: 
+      - net
+    ports: 
+      - "${KONG_HTTP}:8000"
+      - "${KONG_HTTPS}:8443"
+      - "${KONG_ADMIN}:8001"
+      - "${KONG_MANAGE}:8444"
+    environment: 
+      - LC_CTYPE=${LC_TYPE}
+      - LC_ALL=${LC_ALL}
+      - KONG_DATABASE=postgres
+      - KONG_PG_HOST=kong-db
+      - KONG_PG_DATABASE=${PSQL_DB}
+      - KONG_PG_USER=${PSQL_USER}
+      - KONG_PG_PASSWORD=${PSQL_PSWD}
+      - KONG_PROXY_ACCESS_LOG=/dev/stdout
+      - KONG_PROXY_ERROR_LOG=/dev/stderr
+      - KONG_PROXY_LISTEN=0.0.0.0:8000, 0.0.0.0:8443 ssl http2
+      - KONG_ADMIN_ACCESS_LOG=/dev/stdout
+      - KONG_ADMIN_ERROR_LOG=/dev/stderr
+      - KONG_ADMIN_LISTEN=0.0.0.0:8001, 0.0.0.0:8444 ssl http2
+      - TZ=${TIMEZONE}
+    restart: always
+    healthcheck:
+      test: ["CMD", "kong", "health"]
+      interval: 5s
+      timeout: 2s
+      retries: 15
+
+  konga:
+    image: pantsel/konga
+    container_name: konga
+    volumes: 
+      - vol:/app/kongadata
+    networks: 
+      - net
+    ports: 
+      - "${KONGA_PORT}:1337"
+    environment: 
+      - TZ=${TIMEZONE}
+      - NODE_ENV=${NODE}
+    links: 
+      - kong:kong
+    restart: always
+    
+volumes: 
+  db:
+    driver: local
+  vol:
+    driver: local
+
+networks: 
+  net:
+    driver: bridge
