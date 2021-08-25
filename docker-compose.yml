@@ -5,14 +5,14 @@ services:
     image: postgres:13-alpine
     container_name: kong-db
     ports: 
-      - "5432:5432"
+      - "${PSQL_PORT}:5432"
     environment:
-      POSTGRES_DB: kong
-      POSTGRES_USER: kong
-      POSTGRES_PASSWORD: kong
-      TZ: "Asia/Bangkok"
+      POSTGRES_DB: ${PSQL_DB}
+      POSTGRES_USER: ${PSQL_USER}
+      POSTGRES_PASSWORD: ${PSQL_PSWD}
+      TZ: ${TIMEZONE}
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "kong"]
+      test: ["CMD", "pg_isready -U kong"]
       interval: 30s
       timeout: 30s
       retries: 3
@@ -30,10 +30,10 @@ services:
       - kong-db
     environment:
       KONG_DATABASE: postgres
-      KONG_PG_DATABASE: kong
       KONG_PG_HOST: kong-db
-      KONG_PG_USER: kong
-      KONG_PG_PASSWORD: kong
+      KONG_PG_DATABASE: ${PSQL_DB}
+      KONG_PG_USER: ${PSQL_USER}
+      KONG_PG_PASSWORD: ${PSQL_PSWD}
     networks:
       - kong_net
     restart: on-failure
@@ -66,21 +66,21 @@ services:
       KONG_PROXY_LISTEN: "0.0.0.0:8000, 0.0.0.0:8443 ssl http2"
       KONG_ADMIN_LISTEN: "0.0.0.0:8001, 0.0.0.0:8444 ssl http2"
       KONG_DATABASE: postgres
-      KONG_PG_DATABASE: kong
       KONG_PG_HOST: kong-db
-      KONG_PG_USER: kong
-      KONG_PG_PASSWORD: kong
+      KONG_PG_DATABASE: ${PSQL_DB}
+      KONG_PG_USER: ${PSQL_USER}
+      KONG_PG_PASSWORD: ${PSQL_PSWD}
       KONG_PROXY_ACCESS_LOG: /dev/stdout
       KONG_PROXY_ERROR_LOG: /dev/stderr
       KONG_PREFIX: /var/run/kong
-      TZ: "Asia/Bangkok"
+      TZ: ${TIMEZONE}
     networks:
       - kong_net
     ports:
-      - "8000:8000"
-      - "8443:8443"
-      - "8001:8001"
-      - "8444:8444"
+      - "${KONG_HTTP}:8000"
+      - "${KONG_HTTPS}:8443"
+      - "${KONG_ADMIN}:8001"
+      - "${KONG_MANAGE}:8444"
     healthcheck:
       test: ["CMD", "kong", "health"]
       interval: 10s
@@ -102,8 +102,8 @@ services:
     ports: 
       - "${KONGA_PORT}:1337"
     environment: 
-      TZ: "Asia/Bangkok"
-      NODE_ENV: development
+      TZ: ${TIMEZONE}
+      NODE_ENV: ${NODE}
     links: 
       - kong:kong
     restart: always
