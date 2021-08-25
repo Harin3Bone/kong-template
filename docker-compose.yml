@@ -4,80 +4,123 @@ services:
   kong-db:
     image: postgres:13-alpine
     container_name: kong-db
-    volumes: 
-      - db:/var/lib/postgresql/data
-    networks: 
-      - net
     ports: 
-      - "${PSQL_PORT}:5432"
-    environment: 
-      - POSTGRES_DB=${PSQL_DB}
-      - POSTGRES_USER=${PSQL_USER}
-      - POSTGRES_PASSWORD=${PSQL_PSWD}
-      - TZ=${TIMEZONE}
-    restart: always
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: kong
+      POSTGRES_USER: kong
+      POSTGRES_PASSWORD: kong
+      TZ: "Asia/Bangkok"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready", "-U", "postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    
-  kong:
-    depends_on: 
+      test: ["CMD", "pg_isready", "-U", "kong"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    restart: on-failure
+    networks:
+      - kong_net
+    volumes:
+      - kong_data:/var/lib/postgresql/data
+
+  kong-migrations:
+    image: kong
+    container_name: kong-migration
+    command: kong migrations bootstrap
+    depends_on:
       - kong-db
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_DATABASE: kong
+      KONG_PG_HOST: kong-db
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kong
+    networks:
+      - kong_net
+    restart: on-failure
+
+  kong-migrations-up:
+    image: kong
+    container_name: kong-migration-up
+    command: kong migrations up && kong migrations finish
+    depends_on:
+      - kong-db
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_DATABASE: kong
+      KONG_PG_HOST: kong-db
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kong
+    networks:
+      - kong_net
+    restart: on-failure
+
+  kong:
     image: kong
     container_name: kong
-    networks: 
-      - net
-    ports: 
-      - "${KONG_HTTP}:8000"
-      - "${KONG_HTTPS}:8443"
-      - "${KONG_ADMIN}:8001"
-      - "${KONG_MANAGE}:8444"
-    environment: 
-      - LC_CTYPE=${LC_TYPE}
-      - LC_ALL=${LC_ALL}
-      - KONG_DATABASE=postgres
-      - KONG_PG_HOST=kong-db
-      - KONG_PG_DATABASE=${PSQL_DB}
-      - KONG_PG_USER=${PSQL_USER}
-      - KONG_PG_PASSWORD=${PSQL_PSWD}
-      - KONG_PROXY_ACCESS_LOG=/dev/stdout
-      - KONG_PROXY_ERROR_LOG=/dev/stderr
-      - KONG_PROXY_LISTEN=0.0.0.0:8000, 0.0.0.0:8443 ssl http2
-      - KONG_ADMIN_ACCESS_LOG=/dev/stdout
-      - KONG_ADMIN_ERROR_LOG=/dev/stderr
-      - KONG_ADMIN_LISTEN=0.0.0.0:8001, 0.0.0.0:8444 ssl http2
-      - TZ=${TIMEZONE}
-    restart: always
+    user: kong
+    depends_on:
+      - kong-db
+    environment:
+      KONG_ADMIN_ACCESS_LOG: /dev/stdout
+      KONG_ADMIN_ERROR_LOG: /dev/stderr
+      KONG_PROXY_LISTEN: "0.0.0.0:8000, 0.0.0.0:8443 ssl http2"
+      KONG_ADMIN_LISTEN: "0.0.0.0:8001, 0.0.0.0:8444 ssl http2"
+      KONG_DATABASE: postgres
+      KONG_PG_DATABASE: kong
+      KONG_PG_HOST: kong-db
+      KONG_PG_USER: kong
+      KONG_PG_PASSWORD: kong
+      KONG_PROXY_ACCESS_LOG: /dev/stdout
+      KONG_PROXY_ERROR_LOG: /dev/stderr
+      KONG_PREFIX: /var/run/kong
+      TZ: "Asia/Bangkok"
+    networks:
+      - kong_net
+    ports:
+      - "8000:8000"
+      - "8443:8443"
+      - "8001:8001"
+      - "8444:8444"
     healthcheck:
       test: ["CMD", "kong", "health"]
-      interval: 5s
-      timeout: 2s
-      retries: 15
+      interval: 10s
+      timeout: 10s
+      retries: 10
+    restart: on-failure:5
+    read_only: true
+    volumes:
+      - kong_prefix_vol:/var/run/kong
+      - kong_tmp_vol:/tmp
 
   konga:
     image: pantsel/konga
     container_name: konga
     volumes: 
-      - vol:/app/kongadata
+      - konga_data:/app/kongadata
     networks: 
-      - net
+      - kong_net
     ports: 
       - "${KONGA_PORT}:1337"
     environment: 
-      - TZ=${TIMEZONE}
-      - NODE_ENV=${NODE}
+      TZ: "Asia/Bangkok"
+      NODE_ENV: development
     links: 
       - kong:kong
     restart: always
-    
+
 volumes: 
-  db:
-    driver: local
-  vol:
-    driver: local
+  kong_data: {}
+  konga_data: {}
+  kong_prefix_vol:
+    driver_opts:
+     type: tmpfs
+     device: tmpfs
+  kong_tmp_vol:
+    driver_opts:
+     type: tmpfs
+     device: tmpfs
 
 networks: 
-  net:
+  kong_net:
+    external: false
     driver: bridge
