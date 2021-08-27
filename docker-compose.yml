@@ -2,7 +2,7 @@ version: '3.8'
 
 services: 
   kong-db:
-    image: postgres:13-alpine
+    image: postgres:${PSQL_VERSION}
     container_name: kong-db
     ports: 
       - "${PSQL_PORT}:5432"
@@ -12,8 +12,8 @@ services:
       POSTGRES_PASSWORD: ${PSQL_PSWD}
       TZ: ${TIMEZONE}
     healthcheck:
-      test: ["CMD", "pg_isready -U kong"]
-      interval: 30s
+      test: ["CMD", "pg_isready", "-U", "kong"]
+      interval: 5s
       timeout: 30s
       retries: 3
     restart: on-failure
@@ -63,8 +63,8 @@ services:
     environment:
       KONG_ADMIN_ACCESS_LOG: /dev/stdout
       KONG_ADMIN_ERROR_LOG: /dev/stderr
-      KONG_PROXY_LISTEN: "0.0.0.0:8000, 0.0.0.0:8443 ssl http2"
-      KONG_ADMIN_LISTEN: "0.0.0.0:8001, 0.0.0.0:8444 ssl http2"
+      KONG_PROXY_LISTEN: ${KONG_PROXY_LISTEN}
+      KONG_ADMIN_LISTEN: ${KONG_ADMIN_LISTEN}
       KONG_DATABASE: postgres
       KONG_PG_HOST: kong-db
       KONG_PG_DATABASE: ${PSQL_DB}
@@ -72,8 +72,15 @@ services:
       KONG_PG_PASSWORD: ${PSQL_PSWD}
       KONG_PROXY_ACCESS_LOG: /dev/stdout
       KONG_PROXY_ERROR_LOG: /dev/stderr
-      KONG_PREFIX: /var/run/kong
+      KONG_PREFIX: ${KONG_PREFIX}
       TZ: ${TIMEZONE}
+
+      # For use SSL in Kong
+      #KONG_SSL: “on”
+      #KONG_SSL_CERT: /etc/ssl/certs/nginx-selfsigned.crt
+      #KONG_SSL_CERT_KEY: /etc/ssl/private/nginx-selfsigned.key
+      #KONG_ADMIN_SSL_CERT: /etc/ssl/certs/nginx-selfsigned.crt
+      #KONG_ADMIN_SSL_CERT_KEY: /etc/ssl/private/nginx-selfsigned.key
     networks:
       - kong_net
     ports:
@@ -89,7 +96,7 @@ services:
     restart: on-failure:5
     read_only: true
     volumes:
-      - kong_prefix_vol:/var/run/kong
+      - kong_prefix_vol:${KONG_PREFIX}
       - kong_tmp_vol:/tmp
 
   konga:
@@ -103,6 +110,7 @@ services:
       - "${KONGA_PORT}:1337"
     environment: 
       TZ: ${TIMEZONE}
+      KONGA_LOG_LEVEL: ${KONGA_LOG_LEVEL}
       NODE_ENV: ${NODE}
     links: 
       - kong:kong
