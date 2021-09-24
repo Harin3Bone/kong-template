@@ -1,6 +1,8 @@
 # Docker for Kong
-<img alt="Kong" src="https://img.shields.io/badge/Kong-1AA687?style=flat&logo=kong&logoColor=FFFFFF">&nbsp;
+<img alt="Kong" src="https://img.shields.io/badge/Kong-1AA687?style=flat&logo=Kongregate&logoColor=FFFFFF">&nbsp;
 <img alt="Postgresql" src="https://img.shields.io/badge/Postgresql-FFFFFF?style=flat&logo=postgresql&logoColor=316192">&nbsp;
+<img alt="Prometheus" src="https://img.shields.io/badge/Prometheus-E6522C?style=flat&logo=Prometheus&logoColor=FFFFFF">&nbsp;
+<img alt="Grafana" src="https://img.shields.io/badge/Grafana-F46800?style=flat&logo=Grafana&logoColor=FFFFFF">&nbsp;
 
 ## Description
 This repository made for build simple of Kong with docker.
