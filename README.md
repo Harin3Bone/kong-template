@@ -352,6 +352,86 @@ docker-compose up -d konga
 > ### **Note**
 > After all of this start finish. you can remove container `kong-migrations` and `kong-migrations-up` later. Because it just create for run migration command only
 
+## Implement monitoring system
+We will use `Prometheus` , `Node Exporter` and `Grafana` to monitoring.
+
+### Default Value
+| Variable name | Default value | Datatype | Description |
+|:--------------|:--------------|:--------:|------------:|
+|PROMETHEUS_VERSION|latest|String|Prometheus image version|
+|PROMETHEUS_PORT|9090|number|Prometheus running port|
+|NODEEXP_VERSION|latest|String|Node Exporter running port|
+|NODEEXP_PORT|9100|number|Node Exporter running port|
+|GRAFANA_VERSION|grafana:5.1.0|String|Grafana image version|
+|GRAFANA_PORT|3000|number|Grafana running port|
+
+**Step 1:** create `prometheus.yml` 
+```yaml
+global:
+  external_labels:
+    monitor: devops_monitor
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - "localhost:9090"
+
+  - job_name: node_exporter
+    static_configs:
+      - targets:
+          - "node_exporter:9100"
+
+  - job_name: kong
+    static_configs:
+      - targets:
+          - "kong:8001"
+```
+
+> ### **Note**
+> `prometheus.yml` is a configuration file of prometheus service
+
+**Step 2:** add `Prometheus` service to `docker-compose.yml`
+```yaml
+  prometheus:
+    image: prom/prometheus:${PROMETHEUS_VERSION:-latest}
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/promtheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    expose:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    restart: always
+```
+
+**Step 3:** add `Node Exporter` service to `docker-compose.yml`
+```yaml
+  node_exporter:
+    image: prom/node-exporter:${NODEEXP_VERSION:-latest}
+    container_name: node_exporter
+    expose:
+      - "${NODEEXP_PORT:-9100}:9100"
+    restart: always
+```
+
+**Step 3:** add `Grafana` service to `docker-compose.yml`
+```yaml
+  grafana:
+    image: grafana/${GRAFANA_VERSION:-grafana:5.1.0}
+    container_name: grafana
+    ports:
+      - ${GRAFANA_PORT:-3000}:3000
+    restart: always
+```
+
+**Step 4:** Start server
+```bash
+docker-compose up -d
+```
+
 ## Reference
 * [Docker hub (Kong)](https://hub.docker.com/_/kong)
 * [Docker hub (Postgresql)](https://hub.docker.com/_/postgres)
@@ -359,6 +439,10 @@ docker-compose up -d konga
 * [Kong](https://konghq.com/)
 * [Kong Docker](https://github.com/Kong/docker-kong)
 * [Konga](https://github.com/pantsel/konga)
+* [Prometheus](https://prometheus.io/docs/prometheus/latest/installation/#using-docker)
+* [Node Exporter](https://github.com/prometheus/node_exporter)
+* [Grafana](https://grafana.com/docs/grafana/latest/installation/docker/)
+* [Kong Dashboard](https://grafana.com/grafana/dashboards/7424)
 
 ## Contributor
 <a href="https://github.com/Harin3Bone"><img src="https://img.shields.io/badge/Harin3Bone-181717?style=flat&logo=github&logoColor=ffffff"></a>
