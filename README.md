@@ -43,15 +43,15 @@ version: '3.8'
 
 services: 
   kong-db:
-    image: postgres:${PSQL_VERSION}
+    image: postgres:${PSQL_VERSION:-13-alpine}
     container_name: kong-db
-    ports: 
-      - "${PSQL_PORT}:5432"
+    ports:
+      - "${PSQL_PORT:-5432}:5432"
     environment:
-      POSTGRES_DB: ${PSQL_DB}
-      POSTGRES_USER: ${PSQL_USER}
-      POSTGRES_PASSWORD: ${PSQL_PSWD}
-      TZ: ${TIMEZONE}
+      POSTGRES_DB: ${PSQL_DB:-kong}
+      POSTGRES_USER: ${PSQL_USER:-kong}
+      POSTGRES_PASSWORD: ${PSQL_PSWD:-kong}
+      TZ: ${TIMEZONE:-"Asia/Bangkok"}
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "kong"]
       interval: 5s
@@ -77,9 +77,9 @@ services:
     environment:
       KONG_DATABASE: postgres
       KONG_PG_HOST: kong-db
-      KONG_PG_DATABASE: ${PSQL_DB}
-      KONG_PG_USER: ${PSQL_USER}
-      KONG_PG_PASSWORD: ${PSQL_PSWD}
+      KONG_PG_DATABASE: ${PSQL_DB:-kong}
+      KONG_PG_USER: ${PSQL_USER:-kong}
+      KONG_PG_PASSWORD: ${PSQL_PSWD:-kong}
     networks:
       - kong_net
     restart: on-failure
@@ -114,24 +114,24 @@ services:
     environment:
       KONG_ADMIN_ACCESS_LOG: /dev/stdout
       KONG_ADMIN_ERROR_LOG: /dev/stderr
-      KONG_PROXY_LISTEN: ${KONG_PROXY_LISTEN}
-      KONG_ADMIN_LISTEN: ${KONG_ADMIN_LISTEN}
+      KONG_PROXY_LISTEN: ${KONG_PROXY_LISTEN:-"0.0.0.0:8000, 0.0.0.0:8443 ssl http2"}
+      KONG_ADMIN_LISTEN: ${KONG_ADMIN_LISTEN:-"0.0.0.0:8001, 0.0.0.0:8444 ssl http2"}
       KONG_DATABASE: postgres
       KONG_PG_HOST: kong-db
-      KONG_PG_DATABASE: ${PSQL_DB}
-      KONG_PG_USER: ${PSQL_USER}
-      KONG_PG_PASSWORD: ${PSQL_PSWD}
+      KONG_PG_DATABASE: ${PSQL_DB:-kong}
+      KONG_PG_USER: ${PSQL_USER:-kong}
+      KONG_PG_PASSWORD: ${PSQL_PSWD:-kong}
       KONG_PROXY_ACCESS_LOG: /dev/stdout
       KONG_PROXY_ERROR_LOG: /dev/stderr
-      KONG_PREFIX: ${KONG_PREFIX}
-      TZ: ${TIMEZONE}
+      KONG_PREFIX: ${KONG_PREFIX:-/var/run/kong}
+      TZ: ${TIMEZONE:-"Asia/Bangkok"}
     networks:
       - kong_net
     ports:
-      - "${KONG_HTTP}:8000"
-      - "${KONG_HTTPS}:8443"
-      - "${KONG_ADMIN}:8001"
-      - "${KONG_MANAGE}:8444"
+      - "${KONG_HTTP:-80}:8000"
+      - "${KONG_HTTPS:-443}:8443"
+      - "${KONG_ADMIN:-8001}:8001"
+      - "${KONG_MANAGE:-8444}:8444"
     healthcheck:
       test: ["CMD", "kong", "health"]
       interval: 10s
@@ -140,7 +140,7 @@ services:
     restart: on-failure:5
     read_only: true
     volumes:
-      - kong_prefix_vol:${KONG_PREFIX}
+      - kong_prefix_vol:${KONG_PREFIX:-/var/run/kong}
       - kong_tmp_vol:/tmp
 ```
 > ### **Note**
@@ -154,17 +154,17 @@ services:
   konga:
     image: pantsel/konga
     container_name: konga
-    volumes: 
+    volumes:
       - konga_data:/app/kongadata
-    networks: 
+    networks:
       - kong_net
-    ports: 
-      - "${KONGA_PORT}:1337"
-    environment: 
-      TZ: ${TIMEZONE}
-      KONGA_LOG_LEVEL: ${KONGA_LOG_LEVEL}
-      NODE_ENV: ${NODE}
-    links: 
+    ports:
+      - "${KONGA_PORT:-1337}:1337"
+    environment:
+      TZ: ${TIMEZONE:-"Asia/Bangkok"}
+      KONGA_LOG_LEVEL: ${KONGA_LOG_LEVEL:-debug}
+      NODE_ENV: ${NODE:-development}
+    links:
       - kong:kong
     restart: always
 ```
@@ -194,30 +194,21 @@ networks:
     driver: bridge
 ```
 
-**Step 7:** Copy `default.env` to `.env` for define value
-```bash
-cp default.env .env
-```
-By the way you can rename `default.env` to `.env` as well
-```bash
-mv -f defualt.env .env
-```
-
 Then `docker-compose.yml` will look like this
 ```yaml
-version: '3.8'
+version: "3.8"
 
-services: 
+services:
   kong-db:
-    image: postgres:${PSQL_VERSION}
+    image: postgres:${PSQL_VERSION:-13-alpine}
     container_name: kong-db
-    ports: 
-      - "${PSQL_PORT}:5432"
+    ports:
+      - "${PSQL_PORT:-5432}:5432"
     environment:
-      POSTGRES_DB: ${PSQL_DB}
-      POSTGRES_USER: ${PSQL_USER}
-      POSTGRES_PASSWORD: ${PSQL_PSWD}
-      TZ: ${TIMEZONE}
+      POSTGRES_DB: ${PSQL_DB:-kong}
+      POSTGRES_USER: ${PSQL_USER:-kong}
+      POSTGRES_PASSWORD: ${PSQL_PSWD:-kong}
+      TZ: ${TIMEZONE:-"Asia/Bangkok"}
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "kong"]
       interval: 5s
@@ -238,9 +229,9 @@ services:
     environment:
       KONG_DATABASE: postgres
       KONG_PG_HOST: kong-db
-      KONG_PG_DATABASE: ${PSQL_DB}
-      KONG_PG_USER: ${PSQL_USER}
-      KONG_PG_PASSWORD: ${PSQL_PSWD}
+      KONG_PG_DATABASE: ${PSQL_DB:-kong}
+      KONG_PG_USER: ${PSQL_USER:-kong}
+      KONG_PG_PASSWORD: ${PSQL_PSWD:-kong}
     networks:
       - kong_net
     restart: on-failure
@@ -270,24 +261,24 @@ services:
     environment:
       KONG_ADMIN_ACCESS_LOG: /dev/stdout
       KONG_ADMIN_ERROR_LOG: /dev/stderr
-      KONG_PROXY_LISTEN: ${KONG_PROXY_LISTEN}
-      KONG_ADMIN_LISTEN: ${KONG_ADMIN_LISTEN}
+      KONG_PROXY_LISTEN: ${KONG_PROXY_LISTEN:-"0.0.0.0:8000, 0.0.0.0:8443 ssl http2"}
+      KONG_ADMIN_LISTEN: ${KONG_ADMIN_LISTEN:-"0.0.0.0:8001, 0.0.0.0:8444 ssl http2"}
       KONG_DATABASE: postgres
       KONG_PG_HOST: kong-db
-      KONG_PG_DATABASE: ${PSQL_DB}
-      KONG_PG_USER: ${PSQL_USER}
-      KONG_PG_PASSWORD: ${PSQL_PSWD}
+      KONG_PG_DATABASE: ${PSQL_DB:-kong}
+      KONG_PG_USER: ${PSQL_USER:-kong}
+      KONG_PG_PASSWORD: ${PSQL_PSWD:-kong}
       KONG_PROXY_ACCESS_LOG: /dev/stdout
       KONG_PROXY_ERROR_LOG: /dev/stderr
-      KONG_PREFIX: ${KONG_PREFIX}
-      TZ: ${TIMEZONE}
+      KONG_PREFIX: ${KONG_PREFIX:-/var/run/kong}
+      TZ: ${TIMEZONE:-"Asia/Bangkok"}
     networks:
       - kong_net
     ports:
-      - "${KONG_HTTP}:8000"
-      - "${KONG_HTTPS}:8443"
-      - "${KONG_ADMIN}:8001"
-      - "${KONG_MANAGE}:8444"
+      - "${KONG_HTTP:-80}:8000"
+      - "${KONG_HTTPS:-443}:8443"
+      - "${KONG_ADMIN:-8001}:8001"
+      - "${KONG_MANAGE:-8444}:8444"
     healthcheck:
       test: ["CMD", "kong", "health"]
       interval: 10s
@@ -296,45 +287,46 @@ services:
     restart: on-failure:5
     read_only: true
     volumes:
-      - kong_prefix_vol:${KONG_PREFIX}
+      - kong_prefix_vol:${KONG_PREFIX:-/var/run/kong}
       - kong_tmp_vol:/tmp
 
   konga:
     image: pantsel/konga
     container_name: konga
-    volumes: 
+    volumes:
       - konga_data:/app/kongadata
-    networks: 
+    networks:
       - kong_net
-    ports: 
-      - "${KONGA_PORT}:1337"
-    environment: 
-      TZ: ${TIMEZONE}
-      KONGA_LOG_LEVEL: ${KONGA_LOG_LEVEL}
-      NODE_ENV: ${NODE}
-    links: 
+    ports:
+      - "${KONGA_PORT:-1337}:1337"
+    environment:
+      TZ: ${TIMEZONE:-"Asia/Bangkok"}
+      KONGA_LOG_LEVEL: ${KONGA_LOG_LEVEL:-debug}
+      NODE_ENV: ${NODE:-development}
+    links:
       - kong:kong
     restart: always
 
-volumes: 
+volumes:
   kong_data: {}
   konga_data: {}
   kong_prefix_vol:
     driver_opts:
-     type: tmpfs
-     device: tmpfs
+      type: tmpfs
+      device: tmpfs
   kong_tmp_vol:
     driver_opts:
-     type: tmpfs
-     device: tmpfs
+      type: tmpfs
+      device: tmpfs
 
-networks: 
+networks:
   kong_net:
     external: false
     driver: bridge
+
 ```
 
-**Step 8:** Start server
+**Step 7:** Start server
 ```bash
 docker-compose up -d
 ```
@@ -352,6 +344,92 @@ docker-compose up -d konga
 > ### **Note**
 > After all of this start finish. you can remove container `kong-migrations` and `kong-migrations-up` later. Because it just create for run migration command only
 
+## Implement monitoring system
+We will use `Prometheus` , `Node Exporter` and `Grafana` to monitoring.
+
+### Default Value
+| Variable name | Default value | Datatype | Description |
+|:--------------|:--------------|:--------:|------------:|
+|PROMETHEUS_VERSION|latest|String|Prometheus image version|
+|PROMETHEUS_PORT|9090|number|Prometheus running port|
+|NODEEXP_VERSION|latest|String|Node Exporter running port|
+|NODEEXP_PORT|9100|number|Node Exporter running port|
+|GRAFANA_VERSION|grafana:5.1.0|String|Grafana image version|
+|GRAFANA_PORT|3000|number|Grafana running port|
+
+**Step 1:** create `prometheus.yml` 
+```yaml
+global:
+  external_labels:
+    monitor: devops_monitor
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets:
+          - "localhost:9090"
+
+  - job_name: node_exporter
+    static_configs:
+      - targets:
+          - "node_exporter:9100"
+
+  - job_name: kong
+    static_configs:
+      - targets:
+          - "kong:8001"
+```
+
+> ### **Note**
+> `prometheus.yml` is a configuration file of prometheus service
+
+**Step 2:** add `Prometheus` service to `docker-compose.yml`
+```yaml
+  prometheus:
+    image: prom/prometheus:${PROMETHEUS_VERSION:-latest}
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/promtheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    expose:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    restart: always
+```
+
+**Step 3:** add `Node Exporter` service to `docker-compose.yml`
+```yaml
+  node_exporter:
+    image: prom/node-exporter:${NODEEXP_VERSION:-latest}
+    container_name: node_exporter
+    expose:
+      - "${NODEEXP_PORT:-9100}:9100"
+    restart: always
+```
+
+**Step 3:** add `Grafana` service to `docker-compose.yml`
+```yaml
+  grafana:
+    image: grafana/${GRAFANA_VERSION:-grafana:5.1.0}
+    container_name: grafana
+    ports:
+      - ${GRAFANA_PORT:-3000}:3000
+    restart: always
+```
+
+**Step 4:** Create volume for `Prometheus` service
+```yaml
+volumes:
+  prometheus_data: {}
+```
+
+**Step 5:** Start server
+```bash
+docker-compose up -d
+```
+
 ## Reference
 * [Docker hub (Kong)](https://hub.docker.com/_/kong)
 * [Docker hub (Postgresql)](https://hub.docker.com/_/postgres)
@@ -359,6 +437,10 @@ docker-compose up -d konga
 * [Kong](https://konghq.com/)
 * [Kong Docker](https://github.com/Kong/docker-kong)
 * [Konga](https://github.com/pantsel/konga)
+* [Prometheus](https://prometheus.io/docs/prometheus/latest/installation/#using-docker)
+* [Node Exporter](https://github.com/prometheus/node_exporter)
+* [Grafana](https://grafana.com/docs/grafana/latest/installation/docker/)
+* [Kong Dashboard](https://grafana.com/grafana/dashboards/7424)
 
 ## Contributor
 <a href="https://github.com/Harin3Bone"><img src="https://img.shields.io/badge/Harin3Bone-181717?style=flat&logo=github&logoColor=ffffff"></a>
