@@ -419,7 +419,13 @@ scrape_configs:
     restart: always
 ```
 
-**Step 4:** Start server
+**Step 4:** Create volume for `Prometheus` service
+```yaml
+volumes:
+  prometheus_data: {}
+```
+
+**Step 5:** Start server
 ```bash
 docker-compose up -d
 ```
