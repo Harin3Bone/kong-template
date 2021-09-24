@@ -116,9 +116,34 @@ services:
       - kong:kong
     restart: always
 
+  prometheus:
+    image: prom/prometheus:${PROMETHEUS_VERSION:-latest}
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/promtheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    expose:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    restart: always
+
+  node_exporter:
+    image: prom/node-exporter:${NODEEXP_VERSION:-latest}
+    container_name: node_exporter
+    expose:
+      - "${NODEEXP_PORT:-9100}:9100"
+    restart: always
+
+  grafana:
+    image: grafana/${GRAFANA_VERSION:-grafana:5.1.0}
+    ports:
+      - ${GRAFANA_PORT:-3000}:3000
+
 volumes:
   kong_data: {}
   konga_data: {}
+  prometheus_data: {}
   kong_prefix_vol:
     driver_opts:
       type: tmpfs
