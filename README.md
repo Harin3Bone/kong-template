@@ -3,6 +3,7 @@
 <img alt="Postgresql" src="https://img.shields.io/badge/Postgresql-FFFFFF?style=flat&logo=postgresql&logoColor=316192">&nbsp;
 <img alt="Prometheus" src="https://img.shields.io/badge/Prometheus-E6522C?style=flat&logo=Prometheus&logoColor=FFFFFF">&nbsp;
 <img alt="Grafana" src="https://img.shields.io/badge/Grafana-F46800?style=flat&logo=Grafana&logoColor=FFFFFF">&nbsp;
+<img alt="Docker" src="https://img.shields.io/badge/Docker-2496ED?&style=flat&logo=docker&logoColor=ffffff">&nbsp;
 
 ## Description
 This repository made for build simple of Kong with docker.
