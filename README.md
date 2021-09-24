@@ -43,15 +43,15 @@ version: '3.8'
 
 services: 
   kong-db:
-    image: postgres:${PSQL_VERSION}
+    image: postgres:${PSQL_VERSION:-13-alpine}
     container_name: kong-db
-    ports: 
-      - "${PSQL_PORT}:5432"
+    ports:
+      - "${PSQL_PORT:-5432}:5432"
     environment:
-      POSTGRES_DB: ${PSQL_DB}
-      POSTGRES_USER: ${PSQL_USER}
-      POSTGRES_PASSWORD: ${PSQL_PSWD}
-      TZ: ${TIMEZONE}
+      POSTGRES_DB: ${PSQL_DB:-kong}
+      POSTGRES_USER: ${PSQL_USER:-kong}
+      POSTGRES_PASSWORD: ${PSQL_PSWD:-kong}
+      TZ: ${TIMEZONE:-"Asia/Bangkok"}
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "kong"]
       interval: 5s
@@ -77,9 +77,9 @@ services:
     environment:
       KONG_DATABASE: postgres
       KONG_PG_HOST: kong-db
-      KONG_PG_DATABASE: ${PSQL_DB}
-      KONG_PG_USER: ${PSQL_USER}
-      KONG_PG_PASSWORD: ${PSQL_PSWD}
+      KONG_PG_DATABASE: ${PSQL_DB:-kong}
+      KONG_PG_USER: ${PSQL_USER:-kong}
+      KONG_PG_PASSWORD: ${PSQL_PSWD:-kong}
     networks:
       - kong_net
     restart: on-failure
@@ -114,24 +114,24 @@ services:
     environment:
       KONG_ADMIN_ACCESS_LOG: /dev/stdout
       KONG_ADMIN_ERROR_LOG: /dev/stderr
-      KONG_PROXY_LISTEN: ${KONG_PROXY_LISTEN}
-      KONG_ADMIN_LISTEN: ${KONG_ADMIN_LISTEN}
+      KONG_PROXY_LISTEN: ${KONG_PROXY_LISTEN:-"0.0.0.0:8000, 0.0.0.0:8443 ssl http2"}
+      KONG_ADMIN_LISTEN: ${KONG_ADMIN_LISTEN:-"0.0.0.0:8001, 0.0.0.0:8444 ssl http2"}
       KONG_DATABASE: postgres
       KONG_PG_HOST: kong-db
-      KONG_PG_DATABASE: ${PSQL_DB}
-      KONG_PG_USER: ${PSQL_USER}
-      KONG_PG_PASSWORD: ${PSQL_PSWD}
+      KONG_PG_DATABASE: ${PSQL_DB:-kong}
+      KONG_PG_USER: ${PSQL_USER:-kong}
+      KONG_PG_PASSWORD: ${PSQL_PSWD:-kong}
       KONG_PROXY_ACCESS_LOG: /dev/stdout
       KONG_PROXY_ERROR_LOG: /dev/stderr
-      KONG_PREFIX: ${KONG_PREFIX}
-      TZ: ${TIMEZONE}
+      KONG_PREFIX: ${KONG_PREFIX:-/var/run/kong}
+      TZ: ${TIMEZONE:-"Asia/Bangkok"}
     networks:
       - kong_net
     ports:
-      - "${KONG_HTTP}:8000"
-      - "${KONG_HTTPS}:8443"
-      - "${KONG_ADMIN}:8001"
-      - "${KONG_MANAGE}:8444"
+      - "${KONG_HTTP:-80}:8000"
+      - "${KONG_HTTPS:-443}:8443"
+      - "${KONG_ADMIN:-8001}:8001"
+      - "${KONG_MANAGE:-8444}:8444"
     healthcheck:
       test: ["CMD", "kong", "health"]
       interval: 10s
@@ -140,7 +140,7 @@ services:
     restart: on-failure:5
     read_only: true
     volumes:
-      - kong_prefix_vol:${KONG_PREFIX}
+      - kong_prefix_vol:${KONG_PREFIX:-/var/run/kong}
       - kong_tmp_vol:/tmp
 ```
 > ### **Note**
@@ -154,17 +154,17 @@ services:
   konga:
     image: pantsel/konga
     container_name: konga
-    volumes: 
+    volumes:
       - konga_data:/app/kongadata
-    networks: 
+    networks:
       - kong_net
-    ports: 
-      - "${KONGA_PORT}:1337"
-    environment: 
-      TZ: ${TIMEZONE}
-      KONGA_LOG_LEVEL: ${KONGA_LOG_LEVEL}
-      NODE_ENV: ${NODE}
-    links: 
+    ports:
+      - "${KONGA_PORT:-1337}:1337"
+    environment:
+      TZ: ${TIMEZONE:-"Asia/Bangkok"}
+      KONGA_LOG_LEVEL: ${KONGA_LOG_LEVEL:-debug}
+      NODE_ENV: ${NODE:-development}
+    links:
       - kong:kong
     restart: always
 ```
@@ -194,30 +194,21 @@ networks:
     driver: bridge
 ```
 
-**Step 7:** Copy `default.env` to `.env` for define value
-```bash
-cp default.env .env
-```
-By the way you can rename `default.env` to `.env` as well
-```bash
-mv -f defualt.env .env
-```
-
 Then `docker-compose.yml` will look like this
 ```yaml
-version: '3.8'
+version: "3.8"
 
-services: 
+services:
   kong-db:
-    image: postgres:${PSQL_VERSION}
+    image: postgres:${PSQL_VERSION:-13-alpine}
     container_name: kong-db
-    ports: 
-      - "${PSQL_PORT}:5432"
+    ports:
+      - "${PSQL_PORT:-5432}:5432"
     environment:
-      POSTGRES_DB: ${PSQL_DB}
-      POSTGRES_USER: ${PSQL_USER}
-      POSTGRES_PASSWORD: ${PSQL_PSWD}
-      TZ: ${TIMEZONE}
+      POSTGRES_DB: ${PSQL_DB:-kong}
+      POSTGRES_USER: ${PSQL_USER:-kong}
+      POSTGRES_PASSWORD: ${PSQL_PSWD:-kong}
+      TZ: ${TIMEZONE:-"Asia/Bangkok"}
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "kong"]
       interval: 5s
@@ -238,9 +229,9 @@ services:
     environment:
       KONG_DATABASE: postgres
       KONG_PG_HOST: kong-db
-      KONG_PG_DATABASE: ${PSQL_DB}
-      KONG_PG_USER: ${PSQL_USER}
-      KONG_PG_PASSWORD: ${PSQL_PSWD}
+      KONG_PG_DATABASE: ${PSQL_DB:-kong}
+      KONG_PG_USER: ${PSQL_USER:-kong}
+      KONG_PG_PASSWORD: ${PSQL_PSWD:-kong}
     networks:
       - kong_net
     restart: on-failure
@@ -270,24 +261,24 @@ services:
     environment:
       KONG_ADMIN_ACCESS_LOG: /dev/stdout
       KONG_ADMIN_ERROR_LOG: /dev/stderr
-      KONG_PROXY_LISTEN: ${KONG_PROXY_LISTEN}
-      KONG_ADMIN_LISTEN: ${KONG_ADMIN_LISTEN}
+      KONG_PROXY_LISTEN: ${KONG_PROXY_LISTEN:-"0.0.0.0:8000, 0.0.0.0:8443 ssl http2"}
+      KONG_ADMIN_LISTEN: ${KONG_ADMIN_LISTEN:-"0.0.0.0:8001, 0.0.0.0:8444 ssl http2"}
       KONG_DATABASE: postgres
       KONG_PG_HOST: kong-db
-      KONG_PG_DATABASE: ${PSQL_DB}
-      KONG_PG_USER: ${PSQL_USER}
-      KONG_PG_PASSWORD: ${PSQL_PSWD}
+      KONG_PG_DATABASE: ${PSQL_DB:-kong}
+      KONG_PG_USER: ${PSQL_USER:-kong}
+      KONG_PG_PASSWORD: ${PSQL_PSWD:-kong}
       KONG_PROXY_ACCESS_LOG: /dev/stdout
       KONG_PROXY_ERROR_LOG: /dev/stderr
-      KONG_PREFIX: ${KONG_PREFIX}
-      TZ: ${TIMEZONE}
+      KONG_PREFIX: ${KONG_PREFIX:-/var/run/kong}
+      TZ: ${TIMEZONE:-"Asia/Bangkok"}
     networks:
       - kong_net
     ports:
-      - "${KONG_HTTP}:8000"
-      - "${KONG_HTTPS}:8443"
-      - "${KONG_ADMIN}:8001"
-      - "${KONG_MANAGE}:8444"
+      - "${KONG_HTTP:-80}:8000"
+      - "${KONG_HTTPS:-443}:8443"
+      - "${KONG_ADMIN:-8001}:8001"
+      - "${KONG_MANAGE:-8444}:8444"
     healthcheck:
       test: ["CMD", "kong", "health"]
       interval: 10s
@@ -296,45 +287,46 @@ services:
     restart: on-failure:5
     read_only: true
     volumes:
-      - kong_prefix_vol:${KONG_PREFIX}
+      - kong_prefix_vol:${KONG_PREFIX:-/var/run/kong}
       - kong_tmp_vol:/tmp
 
   konga:
     image: pantsel/konga
     container_name: konga
-    volumes: 
+    volumes:
       - konga_data:/app/kongadata
-    networks: 
+    networks:
       - kong_net
-    ports: 
-      - "${KONGA_PORT}:1337"
-    environment: 
-      TZ: ${TIMEZONE}
-      KONGA_LOG_LEVEL: ${KONGA_LOG_LEVEL}
-      NODE_ENV: ${NODE}
-    links: 
+    ports:
+      - "${KONGA_PORT:-1337}:1337"
+    environment:
+      TZ: ${TIMEZONE:-"Asia/Bangkok"}
+      KONGA_LOG_LEVEL: ${KONGA_LOG_LEVEL:-debug}
+      NODE_ENV: ${NODE:-development}
+    links:
       - kong:kong
     restart: always
 
-volumes: 
+volumes:
   kong_data: {}
   konga_data: {}
   kong_prefix_vol:
     driver_opts:
-     type: tmpfs
-     device: tmpfs
+      type: tmpfs
+      device: tmpfs
   kong_tmp_vol:
     driver_opts:
-     type: tmpfs
-     device: tmpfs
+      type: tmpfs
+      device: tmpfs
 
-networks: 
+networks:
   kong_net:
     external: false
     driver: bridge
+
 ```
 
-**Step 8:** Start server
+**Step 7:** Start server
 ```bash
 docker-compose up -d
 ```
