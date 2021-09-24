@@ -137,8 +137,10 @@ services:
 
   grafana:
     image: grafana/${GRAFANA_VERSION:-grafana:5.1.0}
+    container_name: grafana
     ports:
       - ${GRAFANA_PORT:-3000}:3000
+    restart: always
 
 volumes:
   kong_data: {}
