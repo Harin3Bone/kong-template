@@ -124,14 +124,14 @@ services:
       - prometheus_data:/promtheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
-    expose:
+    ports:
       - "${PROMETHEUS_PORT:-9090}:9090"
     restart: always
 
   node_exporter:
     image: prom/node-exporter:${NODEEXP_VERSION:-latest}
     container_name: node_exporter
-    expose:
+    ports:
       - "${NODEEXP_PORT:-9100}:9100"
     restart: always
 
