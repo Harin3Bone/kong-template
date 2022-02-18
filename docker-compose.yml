@@ -127,6 +127,8 @@ services:
     ports:
       - "${PROMETHEUS_PORT:-9090}:9090"
     restart: always
+    networks:
+      - kong_net
 
   node_exporter:
     image: prom/node-exporter:${NODEEXP_VERSION:-latest}
@@ -134,6 +136,8 @@ services:
     ports:
       - "${NODEEXP_PORT:-9100}:9100"
     restart: always
+    networks:
+      - kong_net
 
   grafana:
     image: grafana/${GRAFANA_VERSION:-grafana:5.1.0}
@@ -141,6 +145,8 @@ services:
     ports:
       - ${GRAFANA_PORT:-3000}:3000
     restart: always
+    networks:
+      - kong_net
 
 volumes:
   kong_data: {}
