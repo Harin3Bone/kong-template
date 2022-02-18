@@ -1,24 +1,30 @@
 # Docker for Kong
-<img alt="Kong" src="https://img.shields.io/badge/Kong-1AA687?style=flat&logo=Kongregate&logoColor=FFFFFF">&nbsp;
-<img alt="Postgresql" src="https://img.shields.io/badge/Postgresql-FFFFFF?style=flat&logo=postgresql&logoColor=316192">&nbsp;
-<img alt="Prometheus" src="https://img.shields.io/badge/Prometheus-E6522C?style=flat&logo=Prometheus&logoColor=FFFFFF">&nbsp;
-<img alt="Grafana" src="https://img.shields.io/badge/Grafana-F46800?style=flat&logo=Grafana&logoColor=FFFFFF">&nbsp;
-<img alt="Docker" src="https://img.shields.io/badge/Docker-2496ED?&style=flat&logo=docker&logoColor=ffffff">&nbsp;
+
+![Kong](https://img.shields.io/badge/Kong-1AA687?style=flat&logo=Kongregate&logoColor=FFFFFF)&nbsp;
+![Postgresql](https://img.shields.io/badge/Postgresql-FFFFFF?style=flat&logo=postgresql&logoColor=316192)&nbsp;
+![Prometheus](https://img.shields.io/badge/Prometheus-E6522C?style=flat&logo=Prometheus&logoColor=FFFFFF)&nbsp;
+![Grafana](https://img.shields.io/badge/Grafana-F46800?style=flat&logo=Grafana&logoColor=FFFFFF)&nbsp;
+![Docker](https://img.shields.io/badge/Docker-2496ED?&style=flat&logo=docker&logoColor=ffffff)&nbsp;
 
 ## Description
+
 This repository made for build simple of Kong with docker.
 
 ## Prerequisite
+
 * [Docker](https://docs.docker.com/engine/install/ubuntu/)
 * [Docker Compose](https://docs.docker.com/compose/install/)
 
 ## Quick Start
+
 You must run as `sudo` for run command or login as `root`
+
 ```sh
 sudo time ./quick-start.sh
 ```
 
 ## Default Value
+
 Create `.env` file to define your own value
 | Variable name | Default value | Datatype | Description |
 |:--------------|:--------------|:--------:|------------:|
@@ -40,7 +46,9 @@ Create `.env` file to define your own value
 |NODE|development|String|Konga environemnt <br> `production`,`development`|
 
 ## Setup
+
 **Step 1:** Add `Postgresql` node into `docker-compose.yml`
+
 ```yaml
 version: '3.8'
 
@@ -66,10 +74,13 @@ services:
     volumes:
       - kong_data:/var/lib/postgresql/data
 ```
-> ### **Important !**
+
+> **Important !**
+>
 > You must have `healthcheck` because of postgresql must already start before all of other node.
 
 **Step 2:** Add `Migration` node into `docker-compose.yml`
+
 ```yaml
   kong-migrations:
     image: kong
@@ -103,10 +114,12 @@ services:
       - kong_net
     restart: on-failure
 ```
-> ### **Note**
+
+> **Note**
 > From `docker-compose.yml` on above it's not `Kong` server node. But it's **Kong migration** command. Because it's following from install instruction.
 
 **Step 3:** Add `Kong` server node into `docker-compose.yml`
+
 ```yaml
   kong:
     image: kong
@@ -146,13 +159,21 @@ services:
       - kong_prefix_vol:${KONG_PREFIX:-/var/run/kong}
       - kong_tmp_vol:/tmp
 ```
-> ### **Note**
-> From `docker-compose.yml` on above you may see a lot of environment. But for starter i think you should care only `KONG_PG` if you config without `.env` you must make sure that value is same as `Postgresql`  node
 
-> ### **Important !**
-> `KONG_ADMIN` and `KONG_MANAGE` of this it's use 8001 , 8444. But in production for security you should use 127.0.0.1:8001 , 127.0.0.1:8444. Because if it 8001 it's mean 0.0.0.0:8001, That's mean everyone can access `Kong-Admin API` without login to VM
+> **Note**
+>
+> From `docker-compose.yml` on above you may see a lot of environment. But for starter i think you should care only `KONG_PG`
+>
+> if you config without `.env` you must make sure that value is same as `Postgresql`  node
+
+> **Important !**
+>
+> `KONG_ADMIN` and `KONG_MANAGE` of this it's use 8001 , 8444. But in production for security you should use 127.0.0.1:8001 , 127.0.0.1:8444.
+>
+> Because if it 8001 it's mean 0.0.0.0:8001, That's mean everyone can access `Kong-Admin API` without login to VM
 
 **Step 4:** Add `Konga` into `docker-compose.yml`
+
 ```yaml
   konga:
     image: pantsel/konga
@@ -171,10 +192,13 @@ services:
       - kong:kong
     restart: always
 ```
-> ### **Note**
+
+> **Note**
+>
 > If on production. Value of `NODE_ENV` should use **production** instead
 
 **Step 5:** Add volume into `docker-compose.yml`
+
 ```yaml
 volumes: 
   kong_data: {}
@@ -190,6 +214,7 @@ volumes:
 ```
 
 **Step 6:** Add network into `docker-compose.yml`
+
 ```yaml
 networks: 
   kong_net:
@@ -198,6 +223,7 @@ networks:
 ```
 
 Then `docker-compose.yml` will look like this
+
 ```yaml
 version: "3.8"
 
@@ -330,10 +356,13 @@ networks:
 ```
 
 **Step 7:** Start server
+
 ```bash
 docker-compose up -d
 ```
+
 By the way you can run a lot of more command like this
+
 ```bash
 docker-compose up -d kong-db
 
@@ -345,22 +374,27 @@ docker-compose up -d konga
 ```
 
 > ### **Note**
+>
 > After all of this start finish. you can remove container `kong-migrations` and `kong-migrations-up` later. Because it just create for run migration command only
 
 ## Implement monitoring system
+
 We will use `Prometheus` , `Node Exporter` and `Grafana` to monitoring.
 
-### Default Value
+### Monitoring Default Value
+
 | Variable name | Default value | Datatype | Description |
 |:--------------|:--------------|:--------:|------------:|
 |PROMETHEUS_VERSION|latest|String|Prometheus image version|
 |PROMETHEUS_PORT|9090|number|Prometheus running port|
 |NODEEXP_VERSION|latest|String|Node Exporter running port|
 |NODEEXP_PORT|9100|number|Node Exporter running port|
-|GRAFANA_VERSION|grafana:5.1.0|String|Grafana image version|
+|GRAFANA_VERSION|8.2.6-ubuntu|String|Grafana image version|
 |GRAFANA_PORT|3000|number|Grafana running port|
+|TIMEZONE|"Asia/Bangkok"|String|Prometheus,Node Exporter and Grafana Timezone|
 
-**Step 1:** create `prometheus.yml` 
+**Step 1:** create `prometheus.yml`
+
 ```yaml
 global:
   external_labels:
@@ -384,10 +418,12 @@ scrape_configs:
           - "kong:8001"
 ```
 
-> ### **Note**
+> **Note**
+>
 > `prometheus.yml` is a configuration file of prometheus service
 
 **Step 2:** add `Prometheus` service to `docker-compose.yml`
+
 ```yaml
   prometheus:
     image: prom/prometheus:${PROMETHEUS_VERSION:-latest}
@@ -397,43 +433,61 @@ scrape_configs:
       - prometheus_data:/promtheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
-    expose:
+    ports:
       - "${PROMETHEUS_PORT:-9090}:9090"
     restart: always
+    networks:
+      - kong_net
+    environment:
+      TZ: ${TIMEZONE:-"Asia/Bangkok"}
 ```
 
 **Step 3:** add `Node Exporter` service to `docker-compose.yml`
+
 ```yaml
   node_exporter:
     image: prom/node-exporter:${NODEEXP_VERSION:-latest}
     container_name: node_exporter
-    expose:
+    ports:
       - "${NODEEXP_PORT:-9100}:9100"
+    networks:
+      - kong_net
     restart: always
 ```
 
 **Step 3:** add `Grafana` service to `docker-compose.yml`
+
 ```yaml
   grafana:
-    image: grafana/${GRAFANA_VERSION:-grafana:5.1.0}
+    image: grafana/grafana:${GRAFANA_VERSION:-8.2.6-ubuntu}
     container_name: grafana
     ports:
       - ${GRAFANA_PORT:-3000}:3000
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - kong_net
+    environment:
+      TZ: ${TIMEZONE:-"Asia/Bangkok"}
     restart: always
 ```
 
 **Step 4:** Create volume for `Prometheus` service
+
 ```yaml
 volumes:
   prometheus_data: {}
+  grafana_data: {}
 ```
 
 **Step 5:** Start server
+
 ```bash
 docker-compose up -d
 ```
 
 ## Reference
+
 * [Docker hub (Kong)](https://hub.docker.com/_/kong)
 * [Docker hub (Postgresql)](https://hub.docker.com/_/postgres)
 * [Docker hub (Konga)](https://hub.docker.com/r/pantsel/konga)
@@ -444,6 +498,10 @@ docker-compose up -d
 * [Node Exporter](https://github.com/prometheus/node_exporter)
 * [Grafana](https://grafana.com/docs/grafana/latest/installation/docker/)
 * [Kong Dashboard](https://grafana.com/grafana/dashboards/7424)
+* [Node Exporter Dashboard](https://grafana.com/grafana/dashboards/1860)
 
 ## Contributor
-<a href="https://github.com/Harin3Bone"><img src="https://img.shields.io/badge/Harin3Bone-181717?style=flat&logo=github&logoColor=ffffff"></a>
+
+<a href="https://github.com/Harin3Bone">
+<img src="https://img.shields.io/badge/Harin3Bone-181717?style=flat&logo=github&logoColor=ffffff">
+</a>
