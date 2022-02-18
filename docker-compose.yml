@@ -137,9 +137,9 @@ services:
     container_name: node_exporter
     ports:
       - "${NODEEXP_PORT:-9100}:9100"
-    restart: always
     networks:
       - kong_net
+    restart: always
 
   grafana:
     image: grafana/grafana:${GRAFANA_VERSION:-8.2.6-ubuntu}
