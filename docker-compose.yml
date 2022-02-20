@@ -111,8 +111,6 @@ services:
     environment:
       TZ: ${TIMEZONE:-"Asia/Bangkok"}
       KONGA_LOG_LEVEL: ${KONGA_LOG_LEVEL:-debug}
-      HOST: http://kong
-      PORT: 8001
       NODE_ENV: ${NODE:-development}
     links:
       - kong:kong

@@ -236,7 +236,7 @@ networks:
     driver: bridge
 ```
 
-Then `docker-compose.yml` will look like [this](https://github.com/Harin3Bone/kong-template/blob/feature/example/sample-kong.yml)
+Then `docker-compose.yml` will look like [this](https://github.com/Harin3Bone/kong-template/blob/main/example/sample-kong.yml)
 
 **Step 7:** Start server
 
@@ -363,7 +363,7 @@ volumes:
   grafana_data: {}
 ```
 
-Then `docker-compose.yml` will look like [this](https://github.com/Harin3Bone/kong-template/blob/feature/example/sample-monitor.yml)
+Then `docker-compose.yml` will look like [this](https://github.com/Harin3Bone/kong-template/blob/main/example/sample-monitor.yml)
 
 **Step 5:** Start server
 
