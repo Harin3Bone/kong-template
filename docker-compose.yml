@@ -55,7 +55,7 @@ services:
     restart: on-failure
 
   kong:
-    image: kong
+    image: kong:${KONG_VERSION:-latest}
     container_name: kong
     user: kong
     depends_on:
@@ -100,7 +100,7 @@ services:
       - kong_tmp_vol:/tmp
 
   konga:
-    image: pantsel/konga
+    image: pantsel/konga:${KONGA_VERSION:-latest}
     container_name: konga
     volumes:
       - konga_data:/app/kongadata
@@ -111,6 +111,8 @@ services:
     environment:
       TZ: ${TIMEZONE:-"Asia/Bangkok"}
       KONGA_LOG_LEVEL: ${KONGA_LOG_LEVEL:-debug}
+      HOST: http://kong
+      PORT: 8001
       NODE_ENV: ${NODE:-development}
     links:
       - kong:kong
