@@ -63,8 +63,8 @@ services:
     environment:
       KONG_ADMIN_ACCESS_LOG: /dev/stdout
       KONG_ADMIN_ERROR_LOG: /dev/stderr
-      KONG_PROXY_LISTEN: ${KONG_PROXY_LISTEN:-"0.0.0.0:8000, 0.0.0.0:8443 ssl http2"}
-      KONG_ADMIN_LISTEN: ${KONG_ADMIN_LISTEN:-"0.0.0.0:8001, 0.0.0.0:8444 ssl http2"}
+      KONG_PROXY_LISTEN: "0.0.0.0:8000, 0.0.0.0:8443 ssl http2"
+      KONG_ADMIN_LISTEN: "0.0.0.0:8001, 0.0.0.0:8444 ssl http2"
       KONG_DATABASE: postgres
       KONG_PG_HOST: kong-db
       KONG_PG_DATABASE: ${PSQL_DB:-kong}
