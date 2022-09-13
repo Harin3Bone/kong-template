@@ -390,3 +390,8 @@ docker-compose up -d
 <a href="https://github.com/Harin3Bone">
 <img src="https://img.shields.io/badge/Harin3Bone-181717?style=flat&logo=github&logoColor=ffffff">
 </a>
+
+
+### Infrastructure model
+
+![Infrastructure model](.infragenie/infrastructure_model.png)
