@@ -2,3 +2,5 @@
 backup
 pg_data
 konga_data
+.idea
+.vscode

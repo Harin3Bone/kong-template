@@ -26,6 +26,7 @@ sudo time ./quick-start.sh
 ## Postgresql Default Value
 
 Create `.env` file to define your own value
+
 | Variable name | Default value | Datatype | Description |
 |:--------------|:--------------|:--------:|------------:|
 |PSQL_DB|kong|String|Postgresql database name|
